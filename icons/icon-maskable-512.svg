@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Maskable: full bleed background, content in inner 80% (safe zone) -->
+  <rect width="512" height="512" fill="#2d6a3f"/>
+  <!-- Safe zone: 51.2 to 460.8 (center 256, radius 204.8) -->
+  <!-- Spade centered in the 80% safe area -->
+  <path d="
+    M 256 116
+    C 240 142 154 222 154 280
+    C 154 322 176 350 218 350
+    C 240 350 254 336 256 326
+    C 258 336 272 350 294 350
+    C 336 350 358 322 358 280
+    C 358 222 272 142 256 116
+    Z
+  " fill="white"/>
+  <path d="
+    M 242 326
+    C 234 358 204 380 172 392
+    L 242 392
+    Z
+    M 270 326
+    C 278 358 308 380 340 392
+    L 270 392
+    Z
+  " fill="white"/>
+</svg>

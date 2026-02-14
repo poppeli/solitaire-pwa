@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Generate Solitaire PWA Icon PNGs</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f5f5f5;
+      color: #333;
+    }
+    h1 { color: #2d6a3f; }
+    .icon-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin: 20px 0;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .preview {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .info { flex: 1; }
+    .info h3 { margin: 0 0 4px 0; }
+    .info p { margin: 0; color: #666; font-size: 14px; }
+    button {
+      background: #2d6a3f;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    button:hover { background: #245632; }
+    #generate-all {
+      font-size: 16px;
+      padding: 14px 32px;
+      margin: 20px 0;
+    }
+    .status {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #2d6a3f;
+      font-weight: 500;
+    }
+    .status.error { color: #c0392b; }
+  </style>
+</head>
+<body>
+  <h1>Solitaire PWA Icon Generator</h1>
+  <p>Click "Generate All PNGs" to download all icon files. Move the downloaded PNGs into this <code>icons/</code> folder.</p>
+
+  <button id="generate-all">Generate All PNGs</button>
+
+  <div id="icon-list"></div>
+
+  <script>
+    // SVG content embedded as data URIs to avoid file:// CORS / tainted canvas issues
+    const svgSources = {
+      'icon-192': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192"><rect width="192" height="192" rx="32" ry="32" fill="#2d6a3f"/><path d="M 96 34 C 88 48 46 86 46 114 C 46 134 60 148 76 148 C 86 148 94 142 96 136 C 98 142 106 148 116 148 C 132 148 146 134 146 114 C 146 86 104 48 96 34 Z" fill="white"/><path d="M 90 136 C 86 150 72 160 58 164 L 90 164 Z M 102 136 C 106 150 120 160 134 164 L 102 164 Z" fill="white"/></svg>',
+
+      'icon-512': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><rect width="512" height="512" rx="80" ry="80" fill="#2d6a3f"/><path d="M 256 90 C 234 128 122 230 122 304 C 122 358 150 394 202 394 C 230 394 250 378 256 362 C 262 378 282 394 310 394 C 362 394 390 358 390 304 C 390 230 278 128 256 90 Z" fill="white"/><path d="M 240 362 C 230 400 192 426 154 438 L 240 438 Z M 272 362 C 282 400 320 426 358 438 L 272 438 Z" fill="white"/></svg>',
+
+      'icon-maskable-192': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192"><rect width="192" height="192" fill="#2d6a3f"/><path d="M 96 44 C 90 54 58 84 58 106 C 58 122 68 134 82 134 C 90 134 96 128 96 124 C 96 128 102 134 110 134 C 124 134 134 122 134 106 C 134 84 102 54 96 44 Z" fill="white"/><path d="M 91 124 C 88 136 76 144 64 148 L 91 148 Z M 101 124 C 104 136 116 144 128 148 L 101 148 Z" fill="white"/></svg>',
+
+      'icon-maskable-512': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><rect width="512" height="512" fill="#2d6a3f"/><path d="M 256 116 C 240 142 154 222 154 280 C 154 322 176 350 218 350 C 240 350 254 336 256 326 C 258 336 272 350 294 350 C 336 350 358 322 358 280 C 358 222 272 142 256 116 Z" fill="white"/><path d="M 242 326 C 234 358 204 380 172 392 L 242 392 Z M 270 326 C 278 358 308 380 340 392 L 270 392 Z" fill="white"/></svg>'
+    };
+
+    const icons = [
+      { key: 'icon-192',          png: 'icon-192.png',          size: 192 },
+      { key: 'icon-512',          png: 'icon-512.png',          size: 512 },
+      { key: 'icon-maskable-192', png: 'icon-maskable-192.png', size: 192 },
+      { key: 'icon-maskable-512', png: 'icon-maskable-512.png', size: 512 },
+    ];
+
+    const list = document.getElementById('icon-list');
+
+    // Build UI rows with inline data URI previews
+    icons.forEach((icon, i) => {
+      const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgSources[icon.key]);
+      const previewSize = Math.min(icon.size, 128);
+
+      const row = document.createElement('div');
+      row.className = 'icon-row';
+      row.innerHTML =
+        '<img class="preview" src="' + dataUrl + '" width="' + previewSize + '" height="' + previewSize + '">' +
+        '<div class="info">' +
+          '<h3>' + icon.png + '</h3>' +
+          '<p>' + icon.size + ' x ' + icon.size + '</p>' +
+          '<button data-index="' + i + '">Download PNG</button>' +
+          '<div class="status" id="status-' + i + '"></div>' +
+        '</div>';
+      list.appendChild(row);
+    });
+
+    function setStatus(index, text, isError) {
+      var el = document.getElementById('status-' + index);
+      if (el) {
+        el.textContent = text;
+        el.className = isError ? 'status error' : 'status';
+      }
+    }
+
+    function renderAndDownload(icon, index) {
+      return new Promise(function(resolve, reject) {
+        setStatus(index, 'Generating...');
+        var dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgSources[icon.key]);
+        var img = new Image();
+        img.onload = function() {
+          var canvas = document.createElement('canvas');
+          canvas.width = icon.size;
+          canvas.height = icon.size;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, icon.size, icon.size);
+
+          try {
+            canvas.toBlob(function(blob) {
+              if (!blob) {
+                setStatus(index, 'Error: toBlob returned null', true);
+                reject('toBlob failed for ' + icon.png);
+                return;
+              }
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.href = url;
+              a.download = icon.png;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+              setStatus(index, 'Downloaded!');
+              resolve();
+            }, 'image/png');
+          } catch (e) {
+            setStatus(index, 'Error: ' + e.message, true);
+            reject(e.message);
+          }
+        };
+        img.onerror = function() {
+          setStatus(index, 'Error: failed to load SVG', true);
+          reject('Failed to load SVG for ' + icon.png);
+        };
+        img.src = dataUrl;
+      });
+    }
+
+    // Individual download buttons
+    document.addEventListener('click', function(e) {
+      if (e.target.tagName === 'BUTTON' && e.target.dataset.index !== undefined) {
+        var i = parseInt(e.target.dataset.index);
+        renderAndDownload(icons[i], i).catch(function(err) {
+          console.error(err);
+        });
+      }
+    });
+
+    // Generate all
+    document.getElementById('generate-all').addEventListener('click', function() {
+      var i = 0;
+      function next() {
+        if (i >= icons.length) return;
+        renderAndDownload(icons[i], i)
+          .then(function() {
+            i++;
+            setTimeout(next, 600);
+          })
+          .catch(function(err) {
+            console.error(err);
+            i++;
+            setTimeout(next, 600);
+          });
+      }
+      next();
+    });
+  </script>
+</body>
+</html>
