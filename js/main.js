@@ -409,13 +409,6 @@ class GameController {
 
       if (progress < 1) {
         requestAnimationFrame(animFrame);
-      } else {
-        // Show dialog after animation
-        setTimeout(() => {
-          if (confirm('Aloita uusi peli?')) {
-            this.newGame();
-          }
-        }, 200);
       }
     };
 
