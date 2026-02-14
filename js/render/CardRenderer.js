@@ -257,6 +257,11 @@ export class CardRenderer {
 
     let svg = '';
 
+    // Face card border rectangle
+    const borderM = w * 0.23;
+    const borderR = w * 0.04;
+    svg += `<rect x="${borderM}" y="${h * 0.12}" width="${w - borderM * 2}" height="${h * 0.76}" rx="${borderR}" ry="${borderR}" fill="none" stroke="${color}" stroke-width="1" opacity="0.5"/>`;
+
     // Diagonal divider line
     svg += `<line x1="${w * 0.22}" y1="${h * 0.5}" x2="${w * 0.78}" y2="${h * 0.5}" stroke="${accentColor}" stroke-width="0.5" opacity="0.4"/>`;
 
