@@ -250,7 +250,7 @@ export class CardRenderer {
     // Body dimensions
     const bodyTop = headY + headR + w * 0.02;
     const bodyBot = h * 0.5;
-    const bodyW = figW * 0.65;
+    const bodyW = rank === 12 ? figW * 0.55 : figW * 0.65;
 
     // Shoulder width
     const shoulderW = bodyW * 0.6;
