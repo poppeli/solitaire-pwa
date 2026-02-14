@@ -31,6 +31,10 @@ export class BaseGame {
     // Override for stock pile click behavior
   }
 
+  getRules() {
+    return '';
+  }
+
   findAutoMoveToFoundation(card) {
     const foundations = this.state.getPilesByType('foundation');
     for (const foundation of foundations) {

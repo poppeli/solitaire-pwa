@@ -67,8 +67,8 @@ export class InputManager {
     const card = pile.cards[hit.cardIndex];
     if (!card || !card.faceUp) return;
 
-    // For waste and foundation, only the top card can be dragged
-    if ((pile.type === 'waste' || pile.type === 'foundation') &&
+    // For waste, foundation, and freecell, only the top card can be dragged
+    if ((pile.type === 'waste' || pile.type === 'foundation' || pile.type === 'freecell') &&
         hit.cardIndex !== pile.cards.length - 1) {
       return;
     }

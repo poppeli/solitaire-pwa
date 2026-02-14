@@ -74,6 +74,16 @@ export class BoardRenderer {
       });
     }
 
+    // Free cells
+    if (layout.freecells) {
+      layout.freecells.forEach((f, i) => {
+        this.pilePositions[`freecell-${i}`] = {
+          x: offsetX + f.col * (this.cardWidth + this.columnGap),
+          y: row0Y
+        };
+      });
+    }
+
     // Tableau
     if (layout.tableau) {
       layout.tableau.forEach((t, i) => {

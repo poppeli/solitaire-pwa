@@ -89,6 +89,164 @@ html, body {
   flex-shrink: 0;
 }
 
+/* Menu screen */
+#menu-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, #1a5276 0%, #2d6a3f 100%);
+  overflow-y: auto;
+  padding: 20px;
+}
+
+#menu-header {
+  text-align: center;
+  margin-top: 30px;
+  margin-bottom: 24px;
+}
+
+#menu-header img {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+#menu-header h1 {
+  color: #ecf0f1;
+  font-size: 28px;
+  margin-top: 12px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+#menu-games {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-game-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  color: #ecf0f1;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+  touch-action: manipulation;
+}
+
+.menu-game-btn:hover {
+  background: rgba(255,255,255,0.22);
+}
+
+.menu-game-btn:active {
+  background: rgba(255,255,255,0.3);
+}
+
+.menu-game-btn .game-name {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.menu-game-btn .game-desc {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+#menu-footer {
+  margin-top: auto;
+  padding-top: 20px;
+  padding-bottom: 10px;
+  color: #8fb8d0;
+  font-size: 11px;
+}
+
+#btn-menu {
+  font-size: 16px;
+}
+
+#btn-help {
+  font-weight: bold;
+  font-size: 15px;
+  min-width: 32px;
+}
+
+/* Rules modal */
+#rules-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+#rules-content {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px;
+  position: relative;
+  color: #222;
+  font-size: 14px;
+  line-height: 1.5;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#rules-content h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  color: #1a5276;
+}
+
+#rules-content h3 {
+  margin: 14px 0 6px;
+  font-size: 15px;
+  color: #2d6a3f;
+}
+
+#rules-content p {
+  margin: 0 0 8px;
+}
+
+#rules-content ul {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+
+#rules-content li {
+  margin-bottom: 4px;
+}
+
+#rules-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #888;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
 /* Phone */
 @media (max-width: 480px) {
   #hud {

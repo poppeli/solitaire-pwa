@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pasianssi-v1';
+const CACHE_NAME = 'pasianssi-v2';
 
 const ASSETS = [
   './',
@@ -11,6 +11,8 @@ const ASSETS = [
   './js/engine/GameState.js',
   './js/rules/BaseGame.js',
   './js/rules/KlondikeGame.js',
+  './js/rules/SpiderGame.js',
+  './js/rules/FreeCellGame.js',
   './js/rules/GameRegistry.js',
   './js/render/CardRenderer.js',
   './js/render/BoardRenderer.js',

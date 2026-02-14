@@ -62,6 +62,7 @@ export class CardRenderer {
     promises.push(this._svgToImage('empty-tableau', this._generateEmptyPileSVG('tableau')));
     promises.push(this._svgToImage('empty-stock', this._generateEmptyPileSVG('stock')));
     promises.push(this._svgToImage('empty-waste', this._generateEmptyPileSVG('waste')));
+    promises.push(this._svgToImage('empty-freecell', this._generateEmptyPileSVG('freecell')));
 
     await Promise.all(promises);
   }
@@ -133,13 +134,13 @@ export class CardRenderer {
     const positions = [];
 
     const rows = {
-      top1: h * 0.3,
+      top1: h * 0.26,
       top2: h * 0.38,
       mid1: h * 0.42,
       center: h * 0.5,
       mid2: h * 0.58,
       bot2: h * 0.62,
-      bot1: h * 0.7,
+      bot1: h * 0.74,
     };
 
     switch (rank) {
@@ -251,6 +252,9 @@ export class CardRenderer {
     } else if (type === 'stock') {
       const size = Math.max(10, w * 0.2);
       inner = `<text x="${w / 2}" y="${h / 2}" font-size="${size}" font-family="Arial, sans-serif" fill="#3a7d4a" text-anchor="middle" dominant-baseline="central">\u21BB</text>`;
+    } else if (type === 'freecell') {
+      const size = Math.max(10, w * 0.2);
+      inner = `<text x="${w / 2}" y="${h / 2}" font-size="${size}" font-family="Arial, sans-serif" fill="#3a7d4a" text-anchor="middle" dominant-baseline="central">FC</text>`;
     }
 
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">

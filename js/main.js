@@ -3,7 +3,7 @@ import { CardRenderer } from './render/CardRenderer.js';
 import { BoardRenderer } from './render/BoardRenderer.js';
 import { InputManager } from './input/InputManager.js';
 import { HUD } from './ui/HUD.js';
-import { createGame } from './rules/GameRegistry.js';
+import { createGame, getGameList } from './rules/GameRegistry.js';
 
 class GameController {
   constructor() {
@@ -14,7 +14,11 @@ class GameController {
     this.input = null;
     this.hud = null;
     this.game = null;
+    this.currentGameId = 'klondike';
     this.renderRequested = false;
+
+    this.menuScreen = document.getElementById('menu-screen');
+    this.gameScreen = document.getElementById('game-screen');
   }
 
   async init() {
@@ -22,16 +26,74 @@ class GameController {
     this.input = new InputManager(this.canvas, this);
     this.hud = new HUD(this);
 
+    // Menu button
+    const btnMenu = document.getElementById('btn-menu');
+    if (btnMenu) {
+      btnMenu.addEventListener('click', () => this.showMenu());
+    }
+
+    // Help button + modal
+    const btnHelp = document.getElementById('btn-help');
+    const rulesModal = document.getElementById('rules-modal');
+    const rulesBody = document.getElementById('rules-body');
+    const rulesClose = document.getElementById('rules-close');
+
+    if (btnHelp) {
+      btnHelp.addEventListener('click', () => {
+        if (this.game) {
+          rulesBody.innerHTML = this.game.getRules();
+          rulesModal.style.display = 'flex';
+        }
+      });
+    }
+    if (rulesClose) {
+      rulesClose.addEventListener('click', () => {
+        rulesModal.style.display = 'none';
+      });
+    }
+    if (rulesModal) {
+      rulesModal.addEventListener('click', (e) => {
+        if (e.target === rulesModal) rulesModal.style.display = 'none';
+      });
+    }
+
     window.addEventListener('resize', () => this._onResize());
     window.addEventListener('orientationchange', () => {
       setTimeout(() => this._onResize(), 100);
     });
 
+    this._buildMenu();
+    await this.startGame('klondike');
+  }
+
+  _buildMenu() {
+    const container = document.getElementById('menu-games');
+    const games = getGameList();
+
+    for (const game of games) {
+      const btn = document.createElement('button');
+      btn.className = 'menu-game-btn';
+      btn.innerHTML = `<div class="game-name">${game.name}</div><div class="game-desc">${game.description}</div>`;
+      btn.addEventListener('click', () => this.startGame(game.id));
+      container.appendChild(btn);
+    }
+  }
+
+  showMenu() {
+    this.hud.stopTimer();
+    this.menuScreen.style.display = 'flex';
+    this.gameScreen.style.display = 'none';
+  }
+
+  async startGame(gameId) {
+    this.currentGameId = gameId;
+    this.menuScreen.style.display = 'none';
+    this.gameScreen.style.display = 'flex';
     await this.newGame();
   }
 
   async newGame() {
-    this.game = createGame('klondike');
+    this.game = createGame(this.currentGameId);
     await this._onResize();
     this.hud.startTimer();
     this.hud.update();
@@ -120,6 +182,18 @@ class GameController {
       if (this.game.canMove(cards, pile, tp)) {
         this.tryMove(cards, pile, tp);
         return;
+      }
+    }
+
+    // Try moving to free cells (single card)
+    if (cards.length === 1) {
+      const freeCells = this.game.state.getPilesByType('freecell');
+      for (const fc of freeCells) {
+        if (fc === pile) continue;
+        if (this.game.canMove(cards, pile, fc)) {
+          this.tryMove(cards, pile, fc);
+          return;
+        }
       }
     }
   }

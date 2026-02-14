@@ -105,6 +105,33 @@ export class KlondikeGame extends BaseGame {
       .every(p => p.cards.length === 13);
   }
 
+  getRules() {
+    return `<h2>Klondike</h2>
+<h3>Tavoite</h3>
+<p>Siirrä kaikki 52 korttia neljään perustapiikkiin (oikealla ylhäällä) maittain järjestyksessä ässästä kuninkaaseen.</p>
+<h3>Pelialue</h3>
+<ul>
+<li><b>Varastopakka</b> (vasen yläkulma) — klikkaa nostaaksesi ${this.drawCount === 1 ? 'yhden kortin' : 'kolme korttia'} jätepinoon</li>
+<li><b>Jätepino</b> — varastosta nostetut kortit, päällimmäinen pelattavissa</li>
+<li><b>4 perustapiikkiä</b> — rakenna maa kerrallaan: A, 2, 3 ... K</li>
+<li><b>7 tableau-pinoa</b> — rakenna laskevassa järjestyksessä vuoroväreillä (musta-punainen)</li>
+</ul>
+<h3>Säännöt</h3>
+<ul>
+<li>Tableau-pinoissa kortit järjestetään laskevasti vuoroväreillä (esim. musta 7 → punainen 6)</li>
+<li>Vain kuningas voidaan siirtää tyhjään tableau-pinoon</li>
+<li>Korttiryhmiä voi siirtää kerralla, jos ne muodostavat oikean järjestyksen</li>
+<li>Kun kuvapuoli alaspäin oleva kortti paljastuu, se käännetään automaattisesti</li>
+<li>Kun varastopakka loppuu, jätepino kierrätetään takaisin varastoksi</li>
+</ul>
+<h3>Ohjaus</h3>
+<ul>
+<li><b>Raahaa</b> kortteja pinojen välillä</li>
+<li><b>Klikkaa</b> korttia siirtääksesi sen automaattisesti parhaaseen paikkaan</li>
+<li><b>Tuplaklikkaa</b> siirtääksesi kortin perustaan</li>
+</ul>`;
+  }
+
   getBoardLayout() {
     return {
       stock: { col: 0, row: 0 },

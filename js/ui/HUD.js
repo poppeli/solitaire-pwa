@@ -9,7 +9,12 @@ export class HUD {
     this.btnNew = document.getElementById('btn-new');
 
     this.btnUndo.addEventListener('click', () => this.gc.undo());
-    this.btnNew.addEventListener('click', () => this.gc.newGame());
+    this.btnNew.addEventListener('click', () => {
+      if (this.gc.game && this.gc.game.state.moveCount > 0 && !this.gc.game.state.won) {
+        if (!confirm('Aloitetaanko uusi peli? Nykyinen peli hävitetään.')) return;
+      }
+      this.gc.newGame();
+    });
   }
 
   startTimer() {

@@ -14,15 +14,34 @@
 </head>
 <body>
   <div id="app">
-    <div id="game-screen">
+    <!-- Pelivalintavalikko -->
+    <div id="menu-screen">
+      <div id="menu-header">
+        <img src="icons/icon-hallakorpi-digital-256.png" alt="Hallakorpi Digital" width="64" height="64">
+        <h1>Pasianssi</h1>
+      </div>
+      <div id="menu-games"></div>
+      <div id="menu-footer">Hallakorpi Digital 2026</div>
+    </div>
+
+    <!-- Pelinäkymä -->
+    <div id="game-screen" style="display:none">
       <div id="hud">
         <img id="hud-logo" src="icons/icon-hallakorpi-digital-256.png" alt="Hallakorpi Digital" width="24" height="24">
-        <button id="btn-new" title="Uusi peli">&#x21BB; Uusi</button>
+        <button id="btn-menu" title="Valikko">&#x2630;</button>
+        <button id="btn-undo" title="Kumoa">&#x21A9; Kumoa</button>
         <span id="move-count">Siirrot: 0</span>
         <span id="timer">0:00</span>
-        <button id="btn-undo" title="Kumoa">&#x21A9; Kumoa</button>
+        <button id="btn-new" title="Uusi peli">&#x21BB; Uusi</button>
+        <button id="btn-help" title="Ohjeet">?</button>
       </div>
       <canvas id="game-canvas"></canvas>
+      <div id="rules-modal" style="display:none">
+        <div id="rules-content">
+          <button id="rules-close">&times;</button>
+          <div id="rules-body"></div>
+        </div>
+      </div>
       <div id="footer">Hallakorpi Digital 2026</div>
     </div>
   </div>
