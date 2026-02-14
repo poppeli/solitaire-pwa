@@ -69,11 +69,24 @@ html, body {
   font-variant-numeric: tabular-nums;
 }
 
+#hud-logo {
+  border-radius: 4px;
+}
+
 #game-canvas {
   display: block;
-  flex: 1;
+  flex: none;
   cursor: default;
   touch-action: none;
+}
+
+#footer {
+  text-align: center;
+  padding: 4px;
+  background: #1a5276;
+  color: #8fb8d0;
+  font-size: 11px;
+  flex-shrink: 0;
 }
 
 /* Phone */

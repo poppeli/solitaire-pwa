@@ -6,7 +6,8 @@
   <meta name="theme-color" content="#1a5276">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-hallakorpi-digital-256.png">
+  <link rel="icon" type="image/png" href="icons/icon-hallakorpi-digital-256.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/main.css">
   <title>Pasianssi</title>
@@ -15,12 +16,14 @@
   <div id="app">
     <div id="game-screen">
       <div id="hud">
+        <img id="hud-logo" src="icons/icon-hallakorpi-digital-256.png" alt="Hallakorpi Digital" width="24" height="24">
         <button id="btn-new" title="Uusi peli">&#x21BB; Uusi</button>
         <span id="move-count">Siirrot: 0</span>
         <span id="timer">0:00</span>
         <button id="btn-undo" title="Kumoa">&#x21A9; Kumoa</button>
       </div>
       <canvas id="game-canvas"></canvas>
+      <div id="footer">Hallakorpi Digital 2026</div>
     </div>
   </div>
   <script type="module" src="js/main.js"></script>

@@ -43,9 +43,11 @@ class GameController {
     const dpr = window.devicePixelRatio || 1;
     const hudEl = document.getElementById('hud');
     const hudHeight = hudEl ? hudEl.offsetHeight : 0;
+    const footerEl = document.getElementById('footer');
+    const footerHeight = footerEl ? footerEl.offsetHeight : 0;
 
     const displayW = container.clientWidth;
-    const displayH = container.clientHeight - hudHeight;
+    const displayH = container.clientHeight - hudHeight - footerHeight;
 
     this.canvas.style.width = displayW + 'px';
     this.canvas.style.height = displayH + 'px';
