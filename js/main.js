@@ -4,6 +4,7 @@ import { BoardRenderer } from './render/BoardRenderer.js';
 import { InputManager } from './input/InputManager.js';
 import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
+import { AnimationManager } from './render/AnimationManager.js';
 
 class GameController {
   constructor() {
@@ -11,6 +12,7 @@ class GameController {
     this.ctx = this.canvas.getContext('2d');
     this.cardRenderer = new CardRenderer();
     this.renderer = new BoardRenderer(this.canvas, this.cardRenderer);
+    this.animManager = new AnimationManager(this.cardRenderer);
     this.input = null;
     this.hud = null;
     this.game = null;
@@ -63,7 +65,14 @@ class GameController {
     });
 
     this._buildMenu();
-    await this.startGame('klondike');
+
+    // Try to restore saved game
+    const saved = this._loadSave();
+    if (saved) {
+      await this.startGame(saved.gameId, saved);
+    } else {
+      await this.startGame('klondike');
+    }
   }
 
   _buildMenu() {
@@ -85,15 +94,32 @@ class GameController {
     this.gameScreen.style.display = 'none';
   }
 
-  async startGame(gameId) {
+  async startGame(gameId, savedState) {
     this.currentGameId = gameId;
     this.menuScreen.style.display = 'none';
     this.gameScreen.style.display = 'flex';
-    await this.newGame();
+    if (savedState) {
+      await this._restoreGame(savedState);
+    } else {
+      await this.newGame();
+    }
   }
 
   async newGame() {
     this.game = createGame(this.currentGameId);
+    this._clearSave();
+    await this._onResize();
+    this.hud.startTimer();
+    this.hud.update();
+    this.requestRender();
+    this._saveGame();
+  }
+
+  async _restoreGame(saved) {
+    this.game = createGame(saved.gameId);
+    this._restoreSnapshot({ piles: saved.piles, moveCount: saved.moveCount });
+    this.game.state.startTime = Date.now() - (saved.elapsed || 0);
+    this.game.state.won = saved.won || false;
     await this._onResize();
     this.hud.startTimer();
     this.hud.update();
@@ -129,6 +155,16 @@ class GameController {
       this.renderRequested = false;
       if (this.game) {
         this.renderer.render(this.game, this.input.getDragState());
+        // Draw animations on top
+        if (this.animManager.isAnimating()) {
+          const dpr = window.devicePixelRatio || 1;
+          const ctx = this.ctx;
+          ctx.save();
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+          this.animManager.render(ctx, dpr);
+          ctx.restore();
+        }
       }
     });
   }
@@ -139,10 +175,14 @@ class GameController {
     this.game.state.moveCount++;
     this.hud.update();
     this.requestRender();
+    this._saveGame();
   }
 
   tryMove(cards, fromPile, toPile) {
     if (!this.game.canMove(cards, fromPile, toPile)) return false;
+
+    // Capture source position before move
+    const fromPos = this._getCardPosition(fromPile, fromPile.indexOf(cards[0]));
 
     this.game.state.pushUndo();
     const cardIndex = fromPile.indexOf(cards[0]);
@@ -151,13 +191,44 @@ class GameController {
     this.game.onMove(moved, fromPile, toPile);
     this.game.state.moveCount++;
     this.hud.update();
-    this.requestRender();
+
+    // Animate if we have positions and not dragging
+    const toPos = this._getCardPosition(toPile, toPile.cards.length - moved.length);
+    if (fromPos && toPos && !this.input.getDragState()) {
+      this.animManager.animate(moved, fromPos.x, fromPos.y, toPos.x, toPos.y, this.renderer.overlapFaceUp);
+      this._animLoop();
+    } else {
+      this.requestRender();
+    }
 
     if (this.game.isWon()) {
       this._onWin();
+    } else {
+      this._saveGame();
     }
 
     return true;
+  }
+
+  _getCardPosition(pile, cardIndex) {
+    const pos = this.renderer.getPilePosition(pile.id);
+    if (!pos) return null;
+    if (pile.type === 'tableau' && cardIndex > 0) {
+      let y = pos.y;
+      for (let i = 0; i < cardIndex; i++) {
+        const c = pile.cards[i];
+        y += c && c.faceUp ? this.renderer.overlapFaceUp : this.renderer.overlapFaceDown;
+      }
+      return { x: pos.x, y };
+    }
+    return { x: pos.x, y: pos.y };
+  }
+
+  _animLoop() {
+    this.requestRender();
+    if (this.animManager.isAnimating()) {
+      requestAnimationFrame(() => this._animLoop());
+    }
   }
 
   tryAutoMove(pile, cardIndex) {
@@ -205,6 +276,7 @@ class GameController {
     this._restoreSnapshot(snapshot);
     this.hud.update();
     this.requestRender();
+    this._saveGame();
   }
 
   _restoreSnapshot(snapshot) {
@@ -223,20 +295,131 @@ class GameController {
     this.game.state.moveCount = snapshot.moveCount;
   }
 
+  _saveGame() {
+    try {
+      const data = {
+        gameId: this.currentGameId,
+        piles: this.game.state.snapshot(),
+        moveCount: this.game.state.moveCount,
+        elapsed: Date.now() - this.game.state.startTime,
+        won: this.game.state.won
+      };
+      localStorage.setItem('pasianssi-save', JSON.stringify(data));
+    } catch (e) { /* quota exceeded etc. */ }
+  }
+
+  _loadSave() {
+    try {
+      const json = localStorage.getItem('pasianssi-save');
+      if (!json) return null;
+      const data = JSON.parse(json);
+      if (!data.gameId || !data.piles) return null;
+      if (data.won) return null; // Don't restore won games
+      return data;
+    } catch (e) { return null; }
+  }
+
+  _clearSave() {
+    localStorage.removeItem('pasianssi-save');
+  }
+
   _onWin() {
     this.game.state.won = true;
     this.hud.stopTimer();
+    this._clearSave();
+    this._playWinAnimation();
+  }
 
-    setTimeout(() => {
-      const elapsed = Math.floor((Date.now() - this.game.state.startTime) / 1000);
-      const min = Math.floor(elapsed / 60);
-      const sec = elapsed % 60;
-      const msg = `Onneksi olkoon! Voitit pelin!\n\nSiirrot: ${this.game.state.moveCount}\nAika: ${min}:${sec.toString().padStart(2, '0')}`;
+  _playWinAnimation() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = this.canvas.width / dpr;
+    const h = this.canvas.height / dpr;
+    const ctx = this.ctx;
+    const colors = ['#e74c3c', '#f39c12', '#2ecc71', '#3498db', '#9b59b6', '#e91e63', '#00bcd4'];
+    const particles = [];
 
-      if (confirm(msg + '\n\nAloita uusi peli?')) {
-        this.newGame();
+    for (let i = 0; i < 120; i++) {
+      particles.push({
+        x: w / 2 + (Math.random() - 0.5) * w * 0.4,
+        y: h * 0.3,
+        vx: (Math.random() - 0.5) * 12,
+        vy: Math.random() * -10 - 2,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.3,
+        life: 1
+      });
+    }
+
+    const startTime = performance.now();
+    const duration = 2500;
+
+    const animFrame = () => {
+      const elapsed = performance.now() - startTime;
+      const progress = elapsed / duration;
+
+      // Draw game underneath
+      this.renderer.render(this.game, null);
+
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+
+      // Dark overlay fading in
+      ctx.fillStyle = `rgba(0,0,0,${Math.min(0.4, progress * 0.6)})`;
+      ctx.fillRect(0, 0, w, h);
+
+      // Particles
+      for (const p of particles) {
+        p.x += p.vx;
+        p.vy += 0.25;
+        p.y += p.vy;
+        p.rotation += p.rotSpeed;
+        p.life = Math.max(0, 1 - progress);
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        ctx.restore();
       }
-    }, 300);
+
+      // Win text
+      if (progress > 0.3) {
+        const textAlpha = Math.min(1, (progress - 0.3) / 0.3);
+        ctx.globalAlpha = textAlpha;
+        ctx.fillStyle = '#fff';
+        ctx.font = `bold ${Math.max(24, w * 0.07)}px -apple-system, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 8;
+        ctx.fillText('Onneksi olkoon!', w / 2, h * 0.4);
+
+        const gameElapsed = Math.floor((Date.now() - this.game.state.startTime) / 1000);
+        const min = Math.floor(gameElapsed / 60);
+        const sec = gameElapsed % 60;
+        ctx.font = `${Math.max(16, w * 0.04)}px -apple-system, sans-serif`;
+        ctx.fillText(`Siirrot: ${this.game.state.moveCount}   Aika: ${min}:${sec.toString().padStart(2, '0')}`, w / 2, h * 0.5);
+      }
+
+      ctx.restore();
+
+      if (progress < 1) {
+        requestAnimationFrame(animFrame);
+      } else {
+        // Show dialog after animation
+        setTimeout(() => {
+          if (confirm('Aloita uusi peli?')) {
+            this.newGame();
+          }
+        }, 200);
+      }
+    };
+
+    requestAnimationFrame(animFrame);
   }
 }
 

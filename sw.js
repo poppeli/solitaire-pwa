@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pasianssi-v2';
+const CACHE_NAME = 'pasianssi-v3';
 
 const ASSETS = [
   './',
@@ -16,6 +16,7 @@ const ASSETS = [
   './js/rules/GameRegistry.js',
   './js/render/CardRenderer.js',
   './js/render/BoardRenderer.js',
+  './js/render/AnimationManager.js',
   './js/input/InputManager.js',
   './js/ui/HUD.js',
   './icons/icon-192.png',
