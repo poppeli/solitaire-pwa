@@ -183,7 +183,11 @@ export class BoardRenderer {
         this._roundRect(ctx, x + offset, y + offset, this.cardWidth, this.cardHeight, 4);
       }
 
-      if (topCard._animating) {
+      // Check if top card is being dragged or animated
+      const isDragged = dragState && dragState.fromPileId === pile.id &&
+                        dragState.fromCardIndex === pile.cards.length - 1;
+
+      if (topCard._animating || isDragged) {
         // Show the card underneath or empty pile
         const visibleIndex = pile.cards.length - 2;
         if (visibleIndex >= 0) {
