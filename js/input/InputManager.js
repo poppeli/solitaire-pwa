@@ -111,10 +111,7 @@ export class InputManager {
     const ds = this.dragState;
 
     if (!ds.moved) {
-      // Click without drag: if single card, try auto-move to foundation
-      if (ds.cards.length === 1) {
-        this.gc.tryAutoMove(ds.fromPile, ds.fromCardIndex);
-      }
+      // Click without drag: do nothing (double-tap handles auto-move)
       this.dragState = null;
       this.gc.requestRender();
       return;

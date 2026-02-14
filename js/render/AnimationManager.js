@@ -6,9 +6,10 @@ export class AnimationManager {
     this.onComplete = null;
   }
 
-  animate(cards, fromX, fromY, toX, toY, overlapY, duration = 150) {
+  animate(cards, fromX, fromY, toX, toY, overlapY, duration = 350) {
     const startTime = performance.now();
     for (let i = 0; i < cards.length; i++) {
+      cards[i]._animating = true;
       this.animations.push({
         card: cards[i],
         fromX,
@@ -37,6 +38,7 @@ export class AnimationManager {
 
       if (t >= 1) {
         t = 1;
+        a.card._animating = false;
         this.animations.splice(i, 1);
       } else {
         stillRunning = true;

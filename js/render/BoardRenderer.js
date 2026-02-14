@@ -152,8 +152,11 @@ export class BoardRenderer {
       for (let i = 0; i < pile.cards.length; i++) {
         const card = pile.cards[i];
 
-        // Skip cards being dragged
+        // Skip cards being dragged or animated
         if (dragState && dragState.fromPileId === pile.id && i >= dragState.fromCardIndex) {
+          continue;
+        }
+        if (card._animating) {
           continue;
         }
 
@@ -180,7 +183,17 @@ export class BoardRenderer {
         this._roundRect(ctx, x + offset, y + offset, this.cardWidth, this.cardHeight, 4);
       }
 
-      this.cardRenderer.drawCard(ctx, topCard, x, y);
+      if (topCard._animating) {
+        // Show the card underneath or empty pile
+        const visibleIndex = pile.cards.length - 2;
+        if (visibleIndex >= 0) {
+          this.cardRenderer.drawCard(ctx, pile.cards[visibleIndex], x, y);
+        } else {
+          this.cardRenderer.drawEmptyPile(ctx, x, y, pile.type);
+        }
+      } else {
+        this.cardRenderer.drawCard(ctx, topCard, x, y);
+      }
       this.cardPositions.push({
         pileId: pile.id,
         cardIndex: pile.cards.length - 1,

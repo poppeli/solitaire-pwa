@@ -5,27 +5,27 @@ import { FreeCellGame } from './FreeCellGame.js';
 const games = {
   'klondike': {
     name: 'Klondike',
-    description: 'Klassinen pasianssi - nosto 1',
+    description: 'Klassinen pasianssi - nostetaan yksi kerrallaan',
     create: () => new KlondikeGame(1)
   },
   'klondike-draw3': {
-    name: 'Klondike (nosto 3)',
-    description: 'Klassinen pasianssi - nosto 3',
+    name: 'Klondike, nosto 3',
+    description: 'Klassinen pasianssi - nostetaan kolme kerrallan',
     create: () => new KlondikeGame(3)
   },
   'spider-1': {
-    name: 'Spider (1 maa)',
-    description: 'Spider - helpoin versio',
+    name: 'Spider 1',
+    description: 'Helpoin versio, vain yksi maa',
     create: () => new SpiderGame(1)
   },
   'spider-2': {
-    name: 'Spider (2 maata)',
-    description: 'Spider - keskivaikea',
+    name: 'Spider 2 ',
+    description: 'Keskivaikea, kaksi maata',
     create: () => new SpiderGame(2)
   },
   'spider-4': {
-    name: 'Spider (4 maata)',
-    description: 'Spider - vaikein versio',
+    name: 'Spider 4',
+    description: 'Vaikein versio, neljä maata',
     create: () => new SpiderGame(4)
   },
   'freecell': {
