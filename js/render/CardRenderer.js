@@ -113,8 +113,8 @@ export class CardRenderer {
         pipsContent += `<text x="${pip.x}" y="${pip.y}" font-size="${centerSize * 0.7}" fill="${color}" text-anchor="middle" dominant-baseline="central"${rot}>${symbol}</text>`;
       }
     } else {
-      // Face cards (J, Q, K) and Ace - large center symbol
-      pipsContent = `<text x="${w / 2}" y="${h / 2}" font-size="${centerSize}" fill="${color}" text-anchor="middle" dominant-baseline="central">${symbol}</text>`;
+      // Face cards (J, Q, K) - stylized figure
+      pipsContent = this._generateFaceCardContent(suit, rank, w, h);
     }
 
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
@@ -221,6 +221,186 @@ export class CardRenderer {
         break;
     }
     return positions;
+  }
+
+  _generateFaceCardContent(suit, rank, w, h) {
+    const color = this._suitColor(suit);
+    const symbol = this._suitSymbol(suit);
+    const isRed = suit === 'hearts' || suit === 'diamonds';
+
+    // Colors
+    const robeColor = isRed ? '#c0392b' : '#2c3e50';
+    const robeDark = isRed ? '#922b21' : '#1a252f';
+    const accentColor = isRed ? '#e74c3c' : '#34495e';
+    const goldColor = '#d4a017';
+    const goldDark = '#b8860b';
+    const skinColor = '#f0d5a0';
+
+    // Dimensions relative to card
+    const cx = w / 2;
+    const figTop = h * 0.24;
+    const figBot = h * 0.76;
+    const figW = w * 0.5;
+    const figH = h * 0.52;
+
+    // Head dimensions
+    const headR = w * 0.09;
+    const headY = figTop + h * 0.1;
+
+    // Body dimensions
+    const bodyTop = headY + headR + w * 0.02;
+    const bodyBot = h * 0.5;
+    const bodyW = figW * 0.65;
+
+    // Shoulder width
+    const shoulderW = bodyW * 0.6;
+
+    let svg = '';
+
+    // Diagonal divider line
+    svg += `<line x1="${w * 0.22}" y1="${h * 0.5}" x2="${w * 0.78}" y2="${h * 0.5}" stroke="${accentColor}" stroke-width="0.5" opacity="0.4"/>`;
+
+    // === TOP HALF (normal orientation) ===
+    svg += `<clipPath id="top-half"><rect x="0" y="${h * 0.15}" width="${w}" height="${h * 0.35}"/></clipPath>`;
+    svg += `<g clip-path="url(#top-half)">`;
+
+    // Body / Robe
+    svg += `<rect x="${cx - bodyW / 2}" y="${bodyTop}" width="${bodyW}" height="${bodyBot - bodyTop + h * 0.05}" rx="${w * 0.03}" fill="${robeColor}"/>`;
+
+    // Robe center stripe
+    svg += `<rect x="${cx - w * 0.02}" y="${bodyTop}" width="${w * 0.04}" height="${bodyBot - bodyTop + h * 0.05}" fill="${goldColor}"/>`;
+
+    // Shoulders
+    svg += `<rect x="${cx - shoulderW / 2 - w * 0.08}" y="${bodyTop}" width="${w * 0.12}" height="${h * 0.1}" rx="${w * 0.03}" fill="${robeDark}"/>`;
+    svg += `<rect x="${cx + shoulderW / 2 - w * 0.04}" y="${bodyTop}" width="${w * 0.12}" height="${h * 0.1}" rx="${w * 0.03}" fill="${robeDark}"/>`;
+
+    // Collar
+    svg += `<polygon points="${cx},${bodyTop + h * 0.04} ${cx - w * 0.06},${bodyTop} ${cx + w * 0.06},${bodyTop}" fill="${goldColor}"/>`;
+
+    // Head
+    svg += `<circle cx="${cx}" cy="${headY}" r="${headR}" fill="${skinColor}" stroke="${goldDark}" stroke-width="0.5"/>`;
+
+    // Eyes
+    const eyeY = headY - headR * 0.1;
+    const eyeOff = headR * 0.35;
+    svg += `<circle cx="${cx - eyeOff}" cy="${eyeY}" r="${headR * 0.12}" fill="#333"/>`;
+    svg += `<circle cx="${cx + eyeOff}" cy="${eyeY}" r="${headR * 0.12}" fill="#333"/>`;
+
+    // Queen's hair curls
+    if (rank === 12) {
+      const hairColor = '#6b4c00';
+      const hx = headR * 1.05;
+      // Left side curls
+      svg += `<path d="M${cx - hx} ${headY - headR * 0.3} Q${cx - hx - headR * 0.4} ${headY} ${cx - hx} ${headY + headR * 0.4} Q${cx - hx - headR * 0.5} ${headY + headR * 0.7} ${cx - hx + headR * 0.1} ${headY + headR * 1.0}" fill="none" stroke="${hairColor}" stroke-width="${w * 0.018}" stroke-linecap="round"/>`;
+      // Right side curls
+      svg += `<path d="M${cx + hx} ${headY - headR * 0.3} Q${cx + hx + headR * 0.4} ${headY} ${cx + hx} ${headY + headR * 0.4} Q${cx + hx + headR * 0.5} ${headY + headR * 0.7} ${cx + hx - headR * 0.1} ${headY + headR * 1.0}" fill="none" stroke="${hairColor}" stroke-width="${w * 0.018}" stroke-linecap="round"/>`;
+    }
+
+    // King's mustache
+    if (rank === 13) {
+      svg += `<path d="M${cx - headR * 0.05} ${headY + headR * 0.25} Q${cx - headR * 0.5} ${headY + headR * 0.1} ${cx - headR * 0.6} ${headY + headR * 0.5}" fill="none" stroke="#6b4c00" stroke-width="${w * 0.015}" stroke-linecap="round"/>`;
+      svg += `<path d="M${cx + headR * 0.05} ${headY + headR * 0.25} Q${cx + headR * 0.5} ${headY + headR * 0.1} ${cx + headR * 0.6} ${headY + headR * 0.5}" fill="none" stroke="#6b4c00" stroke-width="${w * 0.015}" stroke-linecap="round"/>`;
+    }
+
+    // Suit symbol on chest
+    const chestSymSize = Math.max(8, w * 0.14);
+    svg += `<text x="${cx}" y="${bodyTop + h * 0.12}" font-size="${chestSymSize}" fill="${color}" text-anchor="middle" dominant-baseline="central" opacity="0.8">${symbol}</text>`;
+
+    // Rank-specific headwear
+    if (rank === 13) {
+      // King: full crown with points
+      const crownH = w * 0.1;
+      const crownY = headY - headR * 0.5 - crownH;
+      const crownW2 = headR * 1.1;
+      svg += `<rect x="${cx - crownW2}" y="${crownY}" width="${crownW2 * 2}" height="${crownH}" rx="${w * 0.01}" fill="${goldColor}" stroke="${goldDark}" stroke-width="0.5"/>`;
+      // Crown points
+      const pts = 5;
+      for (let i = 0; i < pts; i++) {
+        const px = cx - crownW2 + (crownW2 * 2 / (pts - 1)) * i;
+        svg += `<polygon points="${px},${crownY} ${px - w * 0.02},${crownY - crownH * 0.5} ${px + w * 0.02},${crownY - crownH * 0.5}" fill="${goldColor}" stroke="${goldDark}" stroke-width="0.3"/>`;
+      }
+      // Gems on crown
+      svg += `<circle cx="${cx}" cy="${crownY + crownH * 0.45}" r="${w * 0.015}" fill="${isRed ? '#e74c3c' : '#3498db'}"/>`;
+      svg += `<circle cx="${cx - crownW2 * 0.5}" cy="${crownY + crownH * 0.45}" r="${w * 0.012}" fill="${isRed ? '#e74c3c' : '#3498db'}"/>`;
+      svg += `<circle cx="${cx + crownW2 * 0.5}" cy="${crownY + crownH * 0.45}" r="${w * 0.012}" fill="${isRed ? '#e74c3c' : '#3498db'}"/>`;
+    } else if (rank === 12) {
+      // Queen: tiara / smaller elegant crown
+      const tiaraY = headY - headR - w * 0.01;
+      const tiaraW = headR * 1.2;
+      const tiaraH = w * 0.08;
+      svg += `<path d="M${cx - tiaraW} ${tiaraY + tiaraH} L${cx - tiaraW * 0.7} ${tiaraY} L${cx - tiaraW * 0.3} ${tiaraY + tiaraH * 0.5} L${cx} ${tiaraY - tiaraH * 0.3} L${cx + tiaraW * 0.3} ${tiaraY + tiaraH * 0.5} L${cx + tiaraW * 0.7} ${tiaraY} L${cx + tiaraW} ${tiaraY + tiaraH}" fill="${goldColor}" stroke="${goldDark}" stroke-width="0.5"/>`;
+      // Center gem
+      svg += `<circle cx="${cx}" cy="${tiaraY}" r="${w * 0.018}" fill="${isRed ? '#e74c3c' : '#9b59b6'}"/>`;
+    } else if (rank === 11) {
+      // Jack: beret/cap with feather
+      const capY = headY - headR * 0.8;
+      const capW = headR * 1.4;
+      svg += `<ellipse cx="${cx}" cy="${capY}" rx="${capW}" ry="${headR * 0.5}" fill="${robeColor}" stroke="${robeDark}" stroke-width="0.5"/>`;
+      // Brim
+      svg += `<ellipse cx="${cx}" cy="${capY + headR * 0.3}" rx="${capW * 1.1}" ry="${headR * 0.2}" fill="${robeDark}"/>`;
+      // Feather
+      svg += `<path d="M${cx + capW * 0.3} ${capY - headR * 0.3} Q${cx + capW * 1.2} ${capY - headR * 1.5} ${cx + capW * 0.5} ${capY - headR * 1.8}" fill="none" stroke="${goldColor}" stroke-width="${w * 0.02}" stroke-linecap="round"/>`;
+    }
+
+    svg += `</g>`;
+
+    // === BOTTOM HALF (mirrored/inverted) ===
+    svg += `<g transform="rotate(180, ${cx}, ${h / 2})">`;
+    svg += `<clipPath id="bot-half"><rect x="0" y="${h * 0.15}" width="${w}" height="${h * 0.35}"/></clipPath>`;
+    svg += `<g clip-path="url(#bot-half)">`;
+
+    // Body / Robe (same as top)
+    svg += `<rect x="${cx - bodyW / 2}" y="${bodyTop}" width="${bodyW}" height="${bodyBot - bodyTop + h * 0.05}" rx="${w * 0.03}" fill="${accentColor}"/>`;
+    svg += `<rect x="${cx - w * 0.02}" y="${bodyTop}" width="${w * 0.04}" height="${bodyBot - bodyTop + h * 0.05}" fill="${goldColor}"/>`;
+    svg += `<rect x="${cx - shoulderW / 2 - w * 0.08}" y="${bodyTop}" width="${w * 0.12}" height="${h * 0.1}" rx="${w * 0.03}" fill="${robeColor}"/>`;
+    svg += `<rect x="${cx + shoulderW / 2 - w * 0.04}" y="${bodyTop}" width="${w * 0.12}" height="${h * 0.1}" rx="${w * 0.03}" fill="${robeColor}"/>`;
+    svg += `<polygon points="${cx},${bodyTop + h * 0.04} ${cx - w * 0.06},${bodyTop} ${cx + w * 0.06},${bodyTop}" fill="${goldColor}"/>`;
+    svg += `<circle cx="${cx}" cy="${headY}" r="${headR}" fill="${skinColor}" stroke="${goldDark}" stroke-width="0.5"/>`;
+    svg += `<circle cx="${cx - eyeOff}" cy="${eyeY}" r="${headR * 0.12}" fill="#333"/>`;
+    svg += `<circle cx="${cx + eyeOff}" cy="${eyeY}" r="${headR * 0.12}" fill="#333"/>`;
+    if (rank === 12) {
+      const hairColor = '#6b4c00';
+      const hx = headR * 1.05;
+      svg += `<path d="M${cx - hx} ${headY - headR * 0.3} Q${cx - hx - headR * 0.4} ${headY} ${cx - hx} ${headY + headR * 0.4} Q${cx - hx - headR * 0.5} ${headY + headR * 0.7} ${cx - hx + headR * 0.1} ${headY + headR * 1.0}" fill="none" stroke="${hairColor}" stroke-width="${w * 0.018}" stroke-linecap="round"/>`;
+      svg += `<path d="M${cx + hx} ${headY - headR * 0.3} Q${cx + hx + headR * 0.4} ${headY} ${cx + hx} ${headY + headR * 0.4} Q${cx + hx + headR * 0.5} ${headY + headR * 0.7} ${cx + hx - headR * 0.1} ${headY + headR * 1.0}" fill="none" stroke="${hairColor}" stroke-width="${w * 0.018}" stroke-linecap="round"/>`;
+    }
+    if (rank === 13) {
+      svg += `<path d="M${cx - headR * 0.05} ${headY + headR * 0.25} Q${cx - headR * 0.5} ${headY + headR * 0.1} ${cx - headR * 0.6} ${headY + headR * 0.5}" fill="none" stroke="#6b4c00" stroke-width="${w * 0.015}" stroke-linecap="round"/>`;
+      svg += `<path d="M${cx + headR * 0.05} ${headY + headR * 0.25} Q${cx + headR * 0.5} ${headY + headR * 0.1} ${cx + headR * 0.6} ${headY + headR * 0.5}" fill="none" stroke="#6b4c00" stroke-width="${w * 0.015}" stroke-linecap="round"/>`;
+    }
+    svg += `<text x="${cx}" y="${bodyTop + h * 0.12}" font-size="${chestSymSize}" fill="${color}" text-anchor="middle" dominant-baseline="central" opacity="0.8">${symbol}</text>`;
+
+    // Same headwear for bottom half
+    if (rank === 13) {
+      const crownH = w * 0.1;
+      const crownY = headY - headR * 0.5 - crownH;
+      const crownW2 = headR * 1.1;
+      svg += `<rect x="${cx - crownW2}" y="${crownY}" width="${crownW2 * 2}" height="${crownH}" rx="${w * 0.01}" fill="${goldColor}" stroke="${goldDark}" stroke-width="0.5"/>`;
+      const pts = 5;
+      for (let i = 0; i < pts; i++) {
+        const px = cx - crownW2 + (crownW2 * 2 / (pts - 1)) * i;
+        svg += `<polygon points="${px},${crownY} ${px - w * 0.02},${crownY - crownH * 0.5} ${px + w * 0.02},${crownY - crownH * 0.5}" fill="${goldColor}" stroke="${goldDark}" stroke-width="0.3"/>`;
+      }
+      svg += `<circle cx="${cx}" cy="${crownY + crownH * 0.45}" r="${w * 0.015}" fill="${isRed ? '#e74c3c' : '#3498db'}"/>`;
+      svg += `<circle cx="${cx - crownW2 * 0.5}" cy="${crownY + crownH * 0.45}" r="${w * 0.012}" fill="${isRed ? '#e74c3c' : '#3498db'}"/>`;
+      svg += `<circle cx="${cx + crownW2 * 0.5}" cy="${crownY + crownH * 0.45}" r="${w * 0.012}" fill="${isRed ? '#e74c3c' : '#3498db'}"/>`;
+    } else if (rank === 12) {
+      const tiaraY = headY - headR - w * 0.01;
+      const tiaraW = headR * 1.2;
+      const tiaraH = w * 0.08;
+      svg += `<path d="M${cx - tiaraW} ${tiaraY + tiaraH} L${cx - tiaraW * 0.7} ${tiaraY} L${cx - tiaraW * 0.3} ${tiaraY + tiaraH * 0.5} L${cx} ${tiaraY - tiaraH * 0.3} L${cx + tiaraW * 0.3} ${tiaraY + tiaraH * 0.5} L${cx + tiaraW * 0.7} ${tiaraY} L${cx + tiaraW} ${tiaraY + tiaraH}" fill="${goldColor}" stroke="${goldDark}" stroke-width="0.5"/>`;
+      svg += `<circle cx="${cx}" cy="${tiaraY}" r="${w * 0.018}" fill="${isRed ? '#e74c3c' : '#9b59b6'}"/>`;
+    } else if (rank === 11) {
+      const capY = headY - headR * 0.8;
+      const capW = headR * 1.4;
+      svg += `<ellipse cx="${cx}" cy="${capY}" rx="${capW}" ry="${headR * 0.5}" fill="${accentColor}" stroke="${robeColor}" stroke-width="0.5"/>`;
+      svg += `<ellipse cx="${cx}" cy="${capY + headR * 0.3}" rx="${capW * 1.1}" ry="${headR * 0.2}" fill="${robeColor}"/>`;
+      svg += `<path d="M${cx + capW * 0.3} ${capY - headR * 0.3} Q${cx + capW * 1.2} ${capY - headR * 1.5} ${cx + capW * 0.5} ${capY - headR * 1.8}" fill="none" stroke="${goldColor}" stroke-width="${w * 0.02}" stroke-linecap="round"/>`;
+    }
+
+    svg += `</g></g>`;
+
+    return svg;
   }
 
   _generateBackSVG() {
