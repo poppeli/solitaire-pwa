@@ -301,12 +301,6 @@ export class CardRenderer {
       svg += `<path d="M${cx + hx} ${headY - headR * 0.3} Q${cx + hx + headR * 0.4} ${headY} ${cx + hx} ${headY + headR * 0.4} Q${cx + hx + headR * 0.5} ${headY + headR * 0.7} ${cx + hx - headR * 0.1} ${headY + headR * 1.0}" fill="none" stroke="${hairColor}" stroke-width="${w * 0.018}" stroke-linecap="round"/>`;
     }
 
-    // King's mustache
-    if (rank === 13) {
-      svg += `<path d="M${cx - headR * 0.05} ${headY + headR * 0.25} Q${cx - headR * 0.5} ${headY + headR * 0.1} ${cx - headR * 0.6} ${headY + headR * 0.5}" fill="none" stroke="#6b4c00" stroke-width="${w * 0.015}" stroke-linecap="round"/>`;
-      svg += `<path d="M${cx + headR * 0.05} ${headY + headR * 0.25} Q${cx + headR * 0.5} ${headY + headR * 0.1} ${cx + headR * 0.6} ${headY + headR * 0.5}" fill="none" stroke="#6b4c00" stroke-width="${w * 0.015}" stroke-linecap="round"/>`;
-    }
-
     // Suit symbol on chest
     const chestSymSize = Math.max(8, w * 0.14);
     svg += `<text x="${cx}" y="${bodyTop + h * 0.12}" font-size="${chestSymSize}" fill="${color}" text-anchor="middle" dominant-baseline="central" opacity="0.8">${symbol}</text>`;
@@ -315,7 +309,7 @@ export class CardRenderer {
     if (rank === 13) {
       // King: full crown with points
       const crownH = w * 0.1;
-      const crownY = headY - headR * 0.5 - crownH;
+      const crownY = headY - headR * 0.3 - crownH;
       const crownW2 = headR * 1.1;
       svg += `<rect x="${cx - crownW2}" y="${crownY}" width="${crownW2 * 2}" height="${crownH}" rx="${w * 0.01}" fill="${goldColor}" stroke="${goldDark}" stroke-width="0.5"/>`;
       // Crown points
@@ -369,16 +363,12 @@ export class CardRenderer {
       svg += `<path d="M${cx - hx} ${headY - headR * 0.3} Q${cx - hx - headR * 0.4} ${headY} ${cx - hx} ${headY + headR * 0.4} Q${cx - hx - headR * 0.5} ${headY + headR * 0.7} ${cx - hx + headR * 0.1} ${headY + headR * 1.0}" fill="none" stroke="${hairColor}" stroke-width="${w * 0.018}" stroke-linecap="round"/>`;
       svg += `<path d="M${cx + hx} ${headY - headR * 0.3} Q${cx + hx + headR * 0.4} ${headY} ${cx + hx} ${headY + headR * 0.4} Q${cx + hx + headR * 0.5} ${headY + headR * 0.7} ${cx + hx - headR * 0.1} ${headY + headR * 1.0}" fill="none" stroke="${hairColor}" stroke-width="${w * 0.018}" stroke-linecap="round"/>`;
     }
-    if (rank === 13) {
-      svg += `<path d="M${cx - headR * 0.05} ${headY + headR * 0.25} Q${cx - headR * 0.5} ${headY + headR * 0.1} ${cx - headR * 0.6} ${headY + headR * 0.5}" fill="none" stroke="#6b4c00" stroke-width="${w * 0.015}" stroke-linecap="round"/>`;
-      svg += `<path d="M${cx + headR * 0.05} ${headY + headR * 0.25} Q${cx + headR * 0.5} ${headY + headR * 0.1} ${cx + headR * 0.6} ${headY + headR * 0.5}" fill="none" stroke="#6b4c00" stroke-width="${w * 0.015}" stroke-linecap="round"/>`;
-    }
     svg += `<text x="${cx}" y="${bodyTop + h * 0.12}" font-size="${chestSymSize}" fill="${color}" text-anchor="middle" dominant-baseline="central" opacity="0.8">${symbol}</text>`;
 
     // Same headwear for bottom half
     if (rank === 13) {
       const crownH = w * 0.1;
-      const crownY = headY - headR * 0.5 - crownH;
+      const crownY = headY - headR * 0.3 - crownH;
       const crownW2 = headR * 1.1;
       svg += `<rect x="${cx - crownW2}" y="${crownY}" width="${crownW2 * 2}" height="${crownH}" rx="${w * 0.01}" fill="${goldColor}" stroke="${goldDark}" stroke-width="0.5"/>`;
       const pts = 5;
