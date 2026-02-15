@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v17';
+const APP_VERSION = 'v18';
 
 class GameController {
   constructor() {
@@ -475,11 +475,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Register service worker
 if ('serviceWorker' in navigator) {
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
-    window.location.reload();
-  });
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
