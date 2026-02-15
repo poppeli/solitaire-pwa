@@ -10,7 +10,7 @@ export class HUD {
 
     this.btnUndo.addEventListener('click', () => this.gc.undo());
     this.btnNew.addEventListener('click', () => {
-      if (this.gc.game && this.gc.game.state.moveCount > 0 && !this.gc.game.state.won) {
+      if (this.gc._hasActiveGame()) {
         if (!confirm('Aloitetaanko uusi peli? Nykyinen peli hävitetään.')) return;
       }
       this.gc.newGame();

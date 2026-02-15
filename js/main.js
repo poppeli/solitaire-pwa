@@ -31,7 +31,10 @@ class GameController {
     // Menu button
     const btnMenu = document.getElementById('btn-menu');
     if (btnMenu) {
-      btnMenu.addEventListener('click', () => this.showMenu());
+      btnMenu.addEventListener('click', () => {
+        if (this._hasActiveGame() && !confirm('Vaihdetaanko peliä? Nykyinen peli hävitetään.')) return;
+        this.showMenu();
+      });
     }
 
     // Help button + modal
@@ -86,6 +89,10 @@ class GameController {
       btn.addEventListener('click', () => this.startGame(game.id));
       container.appendChild(btn);
     }
+  }
+
+  _hasActiveGame() {
+    return this.game && this.game.state.moveCount > 0 && !this.game.state.won;
   }
 
   showMenu() {
