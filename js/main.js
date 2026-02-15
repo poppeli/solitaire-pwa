@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v15';
+const APP_VERSION = 'v16';
 
 class GameController {
   constructor() {
@@ -174,18 +174,11 @@ class GameController {
   }
 
   async _onResize() {
-    const container = this.canvas.parentElement;
     const dpr = this.dpr;
-    const hudEl = document.getElementById('hud');
-    const hudHeight = hudEl ? hudEl.offsetHeight : 0;
-    const footerEl = document.getElementById('footer');
-    const footerHeight = footerEl ? footerEl.offsetHeight : 0;
+    // CSS flex gives the canvas its correct size automatically
+    const displayW = this.canvas.clientWidth;
+    const displayH = this.canvas.clientHeight;
 
-    const displayW = container.clientWidth;
-    const displayH = container.clientHeight - hudHeight - footerHeight;
-
-    this.canvas.style.width = displayW + 'px';
-    this.canvas.style.height = displayH + 'px';
     this.canvas.width = Math.round(displayW * dpr);
     this.canvas.height = Math.round(displayH * dpr);
 

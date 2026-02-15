@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pasianssi-v15';
+const CACHE_NAME = 'pasianssi-v16';
 
 const ASSETS = [
   './',
