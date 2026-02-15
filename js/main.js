@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v16';
+const APP_VERSION = 'v17';
 
 class GameController {
   constructor() {
@@ -82,7 +82,12 @@ class GameController {
     // Try to restore saved game
     const saved = this._loadSave();
     if (saved) {
-      await this.startGame(saved.gameId, saved);
+      try {
+        await this.startGame(saved.gameId, saved);
+      } catch (e) {
+        this._clearSave();
+        await this.startGame('klondike');
+      }
     } else {
       await this.startGame('klondike');
     }
@@ -338,6 +343,7 @@ class GameController {
   _saveGame() {
     try {
       const data = {
+        version: APP_VERSION,
         gameId: this.currentGameId,
         piles: this.game.state.snapshot(),
         moveCount: this.game.state.moveCount,
@@ -355,6 +361,11 @@ class GameController {
       const data = JSON.parse(json);
       if (!data.gameId || !data.piles) return null;
       if (data.won) return null; // Don't restore won games
+      // Discard saves from different versions to avoid restore issues
+      if (data.version && data.version !== APP_VERSION) {
+        localStorage.removeItem('pasianssi-save');
+        return null;
+      }
       return data;
     } catch (e) { return null; }
   }
