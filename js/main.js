@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v22';
+const APP_VERSION = 'v23';
 
 class GameController {
   constructor() {
@@ -234,6 +234,7 @@ class GameController {
     this.game.onStockClick();
     this.game.state.moveCount++;
     this.hud.update();
+    this.renderer.markDirty();
     this.requestRender();
     this._saveGame();
   }
@@ -251,6 +252,7 @@ class GameController {
     this.game.onMove(moved, fromPile, toPile);
     this.game.state.moveCount++;
     this.hud.update();
+    this.renderer.markDirty();
 
     // Animate if we have positions and not dragging
     const toPos = this._getCardPosition(toPile, toPile.cards.length - moved.length);
@@ -335,6 +337,7 @@ class GameController {
     const snapshot = this.game.state.popUndo();
     this._restoreSnapshot(snapshot);
     this.hud.update();
+    this.renderer.markDirty();
     this.requestRender();
     this._saveGame();
   }

@@ -17,6 +17,15 @@ export class BoardRenderer {
     this.pilePositions = {};
     // Card positions cache: for hit testing
     this.cardPositions = [];
+
+    // Offscreen canvas for static board (B+D optimization)
+    this._bgCanvas = document.createElement('canvas');
+    this._bgCtx = this._bgCanvas.getContext('2d');
+    this._bgDirty = true;
+  }
+
+  markDirty() {
+    this._bgDirty = true;
   }
 
   recalculate(game, rightHanded) {
@@ -28,7 +37,6 @@ export class BoardRenderer {
 
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     const availableWidth = this.canvas.width / this.dpr;
-    const availableHeight = this.canvas.height / this.dpr;
 
     this.padding = Math.max(6, availableWidth * 0.015);
     this.columnGap = Math.max(4, availableWidth * 0.01);
@@ -98,14 +106,19 @@ export class BoardRenderer {
       });
     }
 
+    // Resize offscreen canvas to match
+    this._bgCanvas.width = this.canvas.width;
+    this._bgCanvas.height = this.canvas.height;
+    this._bgDirty = true;
+
     return this.cardRenderer.setSize(this.cardWidth, this.cardHeight);
   }
 
-  render(game, dragState) {
-    const ctx = this.ctx;
+  _renderBackground(game) {
+    const ctx = this._bgCtx;
     const dpr = this.dpr || Math.min(window.devicePixelRatio || 1, 2);
-    const displayW = this.canvas.width / dpr;
-    const displayH = this.canvas.height / dpr;
+    const displayW = this._bgCanvas.width / dpr;
+    const displayH = this._bgCanvas.height / dpr;
 
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -117,24 +130,69 @@ export class BoardRenderer {
 
     this.cardPositions = [];
 
-    // Draw each pile
+    // Draw each pile (no drag exclusion — this is the static board)
     for (const pile of game.state.getAllPiles()) {
       const pos = this.pilePositions[pile.id];
       if (!pos) continue;
-      this._renderPile(ctx, pile, pos.x, pos.y, dragState);
-    }
-
-    // Draw dragged cards on top
-    if (dragState && dragState.cards) {
-      for (let i = 0; i < dragState.cards.length; i++) {
-        const card = dragState.cards[i];
-        const x = dragState.currentX - dragState.offsetX;
-        const y = dragState.currentY - dragState.offsetY + i * this.overlapFaceUp;
-        this.cardRenderer.drawCard(ctx, card, x, y);
-      }
+      this._renderPile(ctx, pile, pos.x, pos.y, null);
     }
 
     ctx.restore();
+    this._bgDirty = false;
+  }
+
+  render(game, dragState) {
+    const hasDrag = dragState && dragState.cards && dragState.moved;
+    const hasAnim = game.state.getAllPiles().some(p =>
+      p.cards.some(c => c._animating)
+    );
+
+    // Update offscreen background if state changed
+    if (this._bgDirty && !hasDrag && !hasAnim) {
+      this._renderBackground(game);
+    }
+
+    const ctx = this.ctx;
+    const dpr = this.dpr || Math.min(window.devicePixelRatio || 1, 2);
+
+    if (hasDrag || hasAnim) {
+      // During drag/animation: full redraw (need drag/anim exclusion)
+      const displayW = this.canvas.width / dpr;
+      const displayH = this.canvas.height / dpr;
+
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+
+      ctx.fillStyle = '#2d6a3f';
+      ctx.fillRect(0, 0, displayW, displayH);
+
+      this.cardPositions = [];
+
+      for (const pile of game.state.getAllPiles()) {
+        const pos = this.pilePositions[pile.id];
+        if (!pos) continue;
+        this._renderPile(ctx, pile, pos.x, pos.y, dragState);
+      }
+
+      // Draw dragged cards on top
+      if (hasDrag) {
+        for (let i = 0; i < dragState.cards.length; i++) {
+          const card = dragState.cards[i];
+          const x = dragState.currentX - dragState.offsetX;
+          const y = dragState.currentY - dragState.offsetY + i * this.overlapFaceUp;
+          this.cardRenderer.drawCard(ctx, card, x, y);
+        }
+      }
+
+      ctx.restore();
+    } else {
+      // Static: just blit the cached background
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(this._bgCanvas, 0, 0);
+      ctx.restore();
+    }
   }
 
   _renderPile(ctx, pile, x, y, dragState) {

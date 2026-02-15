@@ -4,6 +4,7 @@ export class InputManager {
     this.gc = gameController;
     this.dragState = null;
     this.lastTapTime = 0;
+    this._cachedRect = null;
 
     // Mouse events
     canvas.addEventListener('mousedown', (e) => this._onPointerDown(e.offsetX, e.offsetY));
@@ -13,6 +14,8 @@ export class InputManager {
     // Touch events
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      // Cache rect at start of touch — stays valid for entire gesture
+      this._cachedRect = this.canvas.getBoundingClientRect();
       const pos = this._touchPos(e);
       this._onPointerDown(pos.x, pos.y);
     }, { passive: false });
@@ -28,12 +31,17 @@ export class InputManager {
       if (this.dragState) {
         this._onPointerUp(this.dragState.currentX, this.dragState.currentY);
       }
+      this._cachedRect = null;
     }, { passive: false });
+  }
+
+  invalidateRect() {
+    this._cachedRect = null;
   }
 
   _touchPos(e) {
     const touch = e.touches[0] || e.changedTouches[0];
-    const rect = this.canvas.getBoundingClientRect();
+    const rect = this._cachedRect || this.canvas.getBoundingClientRect();
     return {
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top
