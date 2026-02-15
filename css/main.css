@@ -81,12 +81,17 @@ html, body {
 }
 
 #footer {
-  text-align: center;
-  padding: 4px;
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
   background: #1a5276;
   color: #8fb8d0;
   font-size: 11px;
   flex-shrink: 0;
+}
+
+#version {
+  opacity: 0.5;
 }
 
 /* Menu screen */

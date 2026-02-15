@@ -6,6 +6,8 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
+const APP_VERSION = 'v12';
+
 class GameController {
   constructor() {
     this.canvas = document.getElementById('game-canvas');
@@ -29,6 +31,10 @@ class GameController {
     await this.cardRenderer.init();
     this.input = new InputManager(this.canvas, this);
     this.hud = new HUD(this);
+
+    // Version in footer
+    const versionEl = document.getElementById('version');
+    if (versionEl) versionEl.textContent = APP_VERSION;
 
     // Handedness buttons
     this._initHandButtons();
