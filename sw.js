@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pasianssi-v21';
+const CACHE_NAME = 'pasianssi-v22';
 
 const ASSETS = [
   './',
@@ -26,7 +26,11 @@ const ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
+      .then((cache) => {
+        // Bypass HTTP cache to ensure fresh files on update
+        const requests = ASSETS.map(url => new Request(url, { cache: 'reload' }));
+        return cache.addAll(requests);
+      })
       .then(() => self.skipWaiting())
   );
 });
