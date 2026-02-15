@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v23';
+const APP_VERSION = 'v24';
 
 class GameController {
   constructor() {
@@ -21,7 +21,7 @@ class GameController {
     this.currentGameId = 'klondike';
     this.renderRequested = false;
     this.rightHanded = localStorage.getItem('pasianssi-hand') !== 'left';
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
     this.menuScreen = document.getElementById('menu-screen');
     this.gameScreen = document.getElementById('game-screen');

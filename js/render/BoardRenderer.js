@@ -35,7 +35,7 @@ export class BoardRenderer {
     // Mirror top row columns for right-handed layout
     const mirrorCol = (col) => rightHanded ? (cols - 1) - col : col;
 
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const availableWidth = this.canvas.width / this.dpr;
 
     this.padding = Math.max(6, availableWidth * 0.015);
@@ -116,7 +116,7 @@ export class BoardRenderer {
 
   _renderBackground(game) {
     const ctx = this._bgCtx;
-    const dpr = this.dpr || Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = this.dpr || Math.min(window.devicePixelRatio || 1, 1.5);
     const displayW = this._bgCanvas.width / dpr;
     const displayH = this._bgCanvas.height / dpr;
 
@@ -153,7 +153,7 @@ export class BoardRenderer {
     }
 
     const ctx = this.ctx;
-    const dpr = this.dpr || Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = this.dpr || Math.min(window.devicePixelRatio || 1, 1.5);
 
     if (hasDrag || hasAnim) {
       // During drag/animation: full redraw (need drag/anim exclusion)
