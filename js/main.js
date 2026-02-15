@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v13';
+const APP_VERSION = 'v14';
 
 class GameController {
   constructor() {
@@ -76,6 +76,11 @@ class GameController {
     window.addEventListener('resize', () => this._onResize());
     window.addEventListener('orientationchange', () => {
       setTimeout(() => this._onResize(), 100);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        setTimeout(() => this._onResize(), 50);
+      }
     });
 
     this._buildMenu();
@@ -182,6 +187,12 @@ class GameController {
 
     const displayW = container.clientWidth;
     const displayH = container.clientHeight - hudHeight - footerHeight;
+
+    // Skip if dimensions aren't ready yet (PWA resuming from background)
+    if (displayW < 10 || displayH < 10) {
+      requestAnimationFrame(() => this._onResize());
+      return;
+    }
 
     this.canvas.style.width = displayW + 'px';
     this.canvas.style.height = displayH + 'px';
