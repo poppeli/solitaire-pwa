@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v20';
+const APP_VERSION = 'v21';
 
 class GameController {
   constructor() {
@@ -180,7 +180,6 @@ class GameController {
 
   async _onResize() {
     const dpr = this.dpr;
-    // Read size from wrapper div (not canvas) to avoid flex feedback loop
     const wrap = document.getElementById('canvas-wrap');
     const displayW = wrap ? wrap.clientWidth : this.canvas.parentElement.clientWidth;
     const displayH = wrap ? wrap.clientHeight : this.canvas.parentElement.clientHeight;
@@ -195,10 +194,18 @@ class GameController {
 
     if (this.game) {
       await this.renderer.recalculate(this.game, this.rightHanded);
-      // Render synchronously to avoid blank frame after canvas clear
       this.renderRequested = false;
       this.renderer.render(this.game, this.input ? this.input.getDragState() : null);
     }
+
+    // Re-check after next frame in case layout wasn't ready yet
+    requestAnimationFrame(() => {
+      const newW = wrap ? wrap.clientWidth : this.canvas.parentElement.clientWidth;
+      const newH = wrap ? wrap.clientHeight : this.canvas.parentElement.clientHeight;
+      if (newW !== this._lastW || newH !== this._lastH) {
+        this._onResize();
+      }
+    });
   }
 
   requestRender() {
