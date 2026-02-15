@@ -19,9 +19,12 @@ export class BoardRenderer {
     this.cardPositions = [];
   }
 
-  recalculate(game) {
+  recalculate(game, rightHanded) {
     const layout = game.getBoardLayout();
     const cols = layout.columns;
+
+    // Mirror top row columns for right-handed layout
+    const mirrorCol = (col) => rightHanded ? (cols - 1) - col : col;
 
     const availableWidth = this.canvas.width / (window.devicePixelRatio || 1);
     const availableHeight = this.canvas.height / (window.devicePixelRatio || 1);
@@ -51,7 +54,7 @@ export class BoardRenderer {
     // Stock
     if (layout.stock) {
       this.pilePositions['stock'] = {
-        x: offsetX + layout.stock.col * (this.cardWidth + this.columnGap),
+        x: offsetX + mirrorCol(layout.stock.col) * (this.cardWidth + this.columnGap),
         y: row0Y
       };
     }
@@ -59,7 +62,7 @@ export class BoardRenderer {
     // Waste
     if (layout.waste) {
       this.pilePositions['waste'] = {
-        x: offsetX + layout.waste.col * (this.cardWidth + this.columnGap),
+        x: offsetX + mirrorCol(layout.waste.col) * (this.cardWidth + this.columnGap),
         y: row0Y
       };
     }
@@ -68,7 +71,7 @@ export class BoardRenderer {
     if (layout.foundations) {
       layout.foundations.forEach((f, i) => {
         this.pilePositions[`foundation-${i}`] = {
-          x: offsetX + f.col * (this.cardWidth + this.columnGap),
+          x: offsetX + mirrorCol(f.col) * (this.cardWidth + this.columnGap),
           y: row0Y
         };
       });
@@ -78,7 +81,7 @@ export class BoardRenderer {
     if (layout.freecells) {
       layout.freecells.forEach((f, i) => {
         this.pilePositions[`freecell-${i}`] = {
-          x: offsetX + f.col * (this.cardWidth + this.columnGap),
+          x: offsetX + mirrorCol(f.col) * (this.cardWidth + this.columnGap),
           y: row0Y
         };
       });

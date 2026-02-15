@@ -18,6 +18,7 @@ class GameController {
     this.game = null;
     this.currentGameId = 'klondike';
     this.renderRequested = false;
+    this.rightHanded = localStorage.getItem('pasianssi-hand') !== 'left';
 
     this.menuScreen = document.getElementById('menu-screen');
     this.gameScreen = document.getElementById('game-screen');
@@ -27,6 +28,9 @@ class GameController {
     await this.cardRenderer.init();
     this.input = new InputManager(this.canvas, this);
     this.hud = new HUD(this);
+
+    // Handedness buttons
+    this._initHandButtons();
 
     // Menu button
     const btnMenu = document.getElementById('btn-menu');
@@ -91,6 +95,34 @@ class GameController {
     }
   }
 
+  _initHandButtons() {
+    const btnRight = document.getElementById('btn-hand-right');
+    const btnLeft = document.getElementById('btn-hand-left');
+    if (!btnRight || !btnLeft) return;
+
+    const updateButtons = () => {
+      btnRight.classList.toggle('active', this.rightHanded);
+      btnLeft.classList.toggle('active', !this.rightHanded);
+    };
+    updateButtons();
+
+    btnRight.addEventListener('click', () => {
+      if (this.rightHanded) return;
+      this.rightHanded = true;
+      localStorage.setItem('pasianssi-hand', 'right');
+      updateButtons();
+      if (this.game) this._onResize();
+    });
+
+    btnLeft.addEventListener('click', () => {
+      if (!this.rightHanded) return;
+      this.rightHanded = false;
+      localStorage.setItem('pasianssi-hand', 'left');
+      updateButtons();
+      if (this.game) this._onResize();
+    });
+  }
+
   _hasActiveGame() {
     return this.game && this.game.state.moveCount > 0 && !this.game.state.won;
   }
@@ -150,7 +182,7 @@ class GameController {
     this.canvas.height = Math.round(displayH * dpr);
 
     if (this.game) {
-      await this.renderer.recalculate(this.game);
+      await this.renderer.recalculate(this.game, this.rightHanded);
       this.requestRender();
     }
   }

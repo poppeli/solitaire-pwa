@@ -160,6 +160,43 @@ html, body {
   margin-top: 2px;
 }
 
+/* Settings */
+#menu-settings {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 16px;
+}
+
+.menu-setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8fb8d0;
+  font-size: 14px;
+}
+
+.hand-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  color: #8fb8d0;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.15s;
+}
+
+.hand-btn.active {
+  background: #2e86c1;
+  border-color: #3498db;
+  color: #fff;
+}
+
+.hand-btn:hover:not(.active) {
+  background: rgba(255,255,255,0.15);
+}
+
 #menu-footer {
   margin-top: auto;
   padding-top: 20px;
