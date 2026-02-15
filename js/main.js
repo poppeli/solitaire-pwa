@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v25';
+const APP_VERSION = 'v26';
 
 class GameController {
   constructor() {
@@ -496,4 +496,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Register service worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
+
+  // Reload once when a new SW takes control (delivers update on 2nd open instead of 3rd)
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (sessionStorage.getItem('sw-reloaded')) return;
+    sessionStorage.setItem('sw-reloaded', '1');
+    location.reload();
+  });
 }
