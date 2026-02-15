@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v18';
+const APP_VERSION = 'v19';
 
 class GameController {
   constructor() {
@@ -180,9 +180,10 @@ class GameController {
 
   async _onResize() {
     const dpr = this.dpr;
-    // CSS flex gives the canvas its correct size automatically
-    const displayW = this.canvas.clientWidth;
-    const displayH = this.canvas.clientHeight;
+    // Read size from wrapper div (not canvas) to avoid flex feedback loop
+    const wrap = document.getElementById('canvas-wrap');
+    const displayW = wrap.clientWidth;
+    const displayH = wrap.clientHeight;
 
     this.canvas.width = Math.round(displayW * dpr);
     this.canvas.height = Math.round(displayH * dpr);
