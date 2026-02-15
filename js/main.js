@@ -19,6 +19,7 @@ class GameController {
     this.currentGameId = 'klondike';
     this.renderRequested = false;
     this.rightHanded = localStorage.getItem('pasianssi-hand') !== 'left';
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     this.menuScreen = document.getElementById('menu-screen');
     this.gameScreen = document.getElementById('game-screen');
@@ -167,7 +168,7 @@ class GameController {
 
   async _onResize() {
     const container = this.canvas.parentElement;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = this.dpr;
     const hudEl = document.getElementById('hud');
     const hudHeight = hudEl ? hudEl.offsetHeight : 0;
     const footerEl = document.getElementById('footer');
@@ -196,7 +197,7 @@ class GameController {
         this.renderer.render(this.game, this.input.getDragState());
         // Draw animations on top
         if (this.animManager.isAnimating()) {
-          const dpr = window.devicePixelRatio || 1;
+          const dpr = this.dpr;
           const ctx = this.ctx;
           ctx.save();
           ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -370,7 +371,7 @@ class GameController {
   }
 
   _playWinAnimation() {
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = this.dpr;
     const w = this.canvas.width / dpr;
     const h = this.canvas.height / dpr;
     const ctx = this.ctx;

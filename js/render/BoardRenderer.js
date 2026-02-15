@@ -26,8 +26,9 @@ export class BoardRenderer {
     // Mirror top row columns for right-handed layout
     const mirrorCol = (col) => rightHanded ? (cols - 1) - col : col;
 
-    const availableWidth = this.canvas.width / (window.devicePixelRatio || 1);
-    const availableHeight = this.canvas.height / (window.devicePixelRatio || 1);
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const availableWidth = this.canvas.width / this.dpr;
+    const availableHeight = this.canvas.height / this.dpr;
 
     this.padding = Math.max(6, availableWidth * 0.015);
     this.columnGap = Math.max(4, availableWidth * 0.01);
@@ -102,7 +103,7 @@ export class BoardRenderer {
 
   render(game, dragState) {
     const ctx = this.ctx;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = this.dpr || Math.min(window.devicePixelRatio || 1, 2);
     const displayW = this.canvas.width / dpr;
     const displayH = this.canvas.height / dpr;
 
