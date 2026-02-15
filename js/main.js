@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v24';
+const APP_VERSION = 'v25';
 
 class GameController {
   constructor() {
@@ -160,6 +160,7 @@ class GameController {
   async newGame() {
     this.game = createGame(this.currentGameId);
     this._clearSave();
+    this.renderer.markDirty();
     await this._onResize();
     this.hud.startTimer();
     this.hud.update();
@@ -172,6 +173,7 @@ class GameController {
     this._restoreSnapshot({ piles: saved.piles, moveCount: saved.moveCount });
     this.game.state.startTime = Date.now() - (saved.elapsed || 0);
     this.game.state.won = saved.won || false;
+    this.renderer.markDirty();
     await this._onResize();
     this.hud.startTimer();
     this.hud.update();
