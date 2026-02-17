@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v26';
+const APP_VERSION = 'v27';
 
 class GameController {
   constructor() {
@@ -200,14 +200,14 @@ class GameController {
       this.renderer.render(this.game, this.input ? this.input.getDragState() : null);
     }
 
-    // Re-check after next frame in case layout wasn't ready yet
-    requestAnimationFrame(() => {
-      const newW = wrap ? wrap.clientWidth : this.canvas.parentElement.clientWidth;
-      const newH = wrap ? wrap.clientHeight : this.canvas.parentElement.clientHeight;
-      if (newW !== this._lastW || newH !== this._lastH) {
-        this._onResize();
-      }
-    });
+    // Re-check after next frame in case layout wasn't ready yet.
+    // Await the re-check so no concurrent render can race with setSize().
+    await new Promise(r => requestAnimationFrame(r));
+    const newW = wrap ? wrap.clientWidth : this.canvas.parentElement.clientWidth;
+    const newH = wrap ? wrap.clientHeight : this.canvas.parentElement.clientHeight;
+    if (newW !== this._lastW || newH !== this._lastH) {
+      await this._onResize();
+    }
   }
 
   requestRender() {

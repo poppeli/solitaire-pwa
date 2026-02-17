@@ -12,7 +12,7 @@ export class CardRenderer {
   }
 
   async init() {
-    await this._generateAllCards();
+    await this._generateAllCards(this.imageCache);
     this.ready = true;
   }
 
@@ -20,8 +20,11 @@ export class CardRenderer {
     if (width !== this.cardWidth || height !== this.cardHeight) {
       this.cardWidth = width;
       this.cardHeight = height;
-      this.imageCache.clear();
-      return this._generateAllCards();
+      // Atomic swap: generate into temp map, then replace all at once
+      const tempCache = new Map();
+      return this._generateAllCards(tempCache).then(() => {
+        this.imageCache = tempCache;
+      });
     }
     return Promise.resolve();
   }
@@ -42,7 +45,7 @@ export class CardRenderer {
     if (img) ctx.drawImage(img, x, y, this.cardWidth, this.cardHeight);
   }
 
-  async _generateAllCards() {
+  async _generateAllCards(targetCache) {
     const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
     const promises = [];
 
@@ -50,31 +53,41 @@ export class CardRenderer {
       for (let rank = 1; rank <= 13; rank++) {
         const key = `${suit}-${rank}`;
         const svg = this._generateCardSVG(suit, rank);
-        promises.push(this._svgToImage(key, svg));
+        promises.push(this._svgToImage(key, svg, targetCache));
       }
     }
 
     // Card back
-    promises.push(this._svgToImage('back', this._generateBackSVG()));
+    promises.push(this._svgToImage('back', this._generateBackSVG(), targetCache));
 
     // Empty pile placeholders
-    promises.push(this._svgToImage('empty-foundation', this._generateEmptyPileSVG('foundation')));
-    promises.push(this._svgToImage('empty-tableau', this._generateEmptyPileSVG('tableau')));
-    promises.push(this._svgToImage('empty-stock', this._generateEmptyPileSVG('stock')));
-    promises.push(this._svgToImage('empty-waste', this._generateEmptyPileSVG('waste')));
-    promises.push(this._svgToImage('empty-freecell', this._generateEmptyPileSVG('freecell')));
+    promises.push(this._svgToImage('empty-foundation', this._generateEmptyPileSVG('foundation'), targetCache));
+    promises.push(this._svgToImage('empty-tableau', this._generateEmptyPileSVG('tableau'), targetCache));
+    promises.push(this._svgToImage('empty-stock', this._generateEmptyPileSVG('stock'), targetCache));
+    promises.push(this._svgToImage('empty-waste', this._generateEmptyPileSVG('waste'), targetCache));
+    promises.push(this._svgToImage('empty-freecell', this._generateEmptyPileSVG('freecell'), targetCache));
 
     await Promise.all(promises);
   }
 
-  _svgToImage(key, svgString) {
-    return new Promise((resolve) => {
+  _svgToImage(key, svgString, targetCache, attempt = 0) {
+    return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        this.imageCache.set(key, img);
+        targetCache.set(key, img);
         resolve();
       };
-      img.onerror = () => resolve(); // Graceful fallback
+      img.onerror = () => {
+        if (attempt < 2) {
+          // Retry up to 2 times with small delay
+          setTimeout(() => {
+            this._svgToImage(key, svgString, targetCache, attempt + 1)
+              .then(resolve, reject);
+          }, 50);
+        } else {
+          reject(new Error(`Failed to load card image: ${key}`));
+        }
+      };
       img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
     });
   }
