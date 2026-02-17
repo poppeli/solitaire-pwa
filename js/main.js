@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v31';
+const APP_VERSION = 'v32';
 
 class GameController {
   constructor() {
@@ -91,6 +91,12 @@ class GameController {
     } else {
       await this.startGame('klondike');
     }
+
+    // Safety re-render: some tablets need extra time for image decode
+    setTimeout(() => {
+      this.renderer.markDirty();
+      this.requestRender();
+    }, 150);
   }
 
   _buildMenu() {

@@ -74,8 +74,16 @@ export class CardRenderer {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
-        targetCache.set(key, img);
-        resolve();
+        // Ensure image is fully decoded before use in canvas
+        const ready = img.decode ? img.decode().then(() => img) : Promise.resolve(img);
+        ready.then((decodedImg) => {
+          targetCache.set(key, decodedImg);
+          resolve();
+        }).catch(() => {
+          // decode() failed but image loaded — use as-is
+          targetCache.set(key, img);
+          resolve();
+        });
       };
       img.onerror = () => {
         if (attempt < 2) {
