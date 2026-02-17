@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v30';
+const APP_VERSION = 'v31';
 
 class GameController {
   constructor() {
@@ -181,6 +181,10 @@ class GameController {
   }
 
   async _onResize(recheckCount = 0) {
+    // Fix mobile viewport height (Android Chrome may report height > visible area)
+    const app = document.getElementById('app');
+    if (app) app.style.height = window.innerHeight + 'px';
+
     const dpr = this.dpr;
     const wrap = document.getElementById('canvas-wrap');
     const displayW = wrap ? wrap.clientWidth : this.canvas.parentElement.clientWidth;
