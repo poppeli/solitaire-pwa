@@ -133,6 +133,8 @@ export class InputManager {
     }
 
     this.dragState = null;
+    // Force background re-render to rebuild cardPositions for hit testing
+    this.gc.renderer.markDirty();
     this.gc.requestRender();
   }
 

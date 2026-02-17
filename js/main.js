@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v32';
+const APP_VERSION = 'v33';
 
 class GameController {
   constructor() {
