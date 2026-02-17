@@ -6,7 +6,7 @@ export class AnimationManager {
     this.onComplete = null;
   }
 
-  animate(cards, fromX, fromY, toX, toY, overlapY, duration = 350) {
+  animate(cards, fromX, fromY, toX, toY, overlapY, duration = 200) {
     const startTime = performance.now();
     for (let i = 0; i < cards.length; i++) {
       cards[i]._animating = true;

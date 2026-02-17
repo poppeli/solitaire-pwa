@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v33';
+const APP_VERSION = 'v34';
 
 class GameController {
   constructor() {
@@ -270,6 +270,10 @@ class GameController {
     // Animate if we have positions and not dragging
     const toPos = this._getCardPosition(toPile, toPile.cards.length - moved.length);
     if (fromPos && toPos && !this.input.getDragState()) {
+      this.animManager.onComplete = () => {
+        this.renderer.markDirty();
+        this.requestRender();
+      };
       this.animManager.animate(moved, fromPos.x, fromPos.y, toPos.x, toPos.y, this.renderer.overlapFaceUp);
       this._animLoop();
     } else {

@@ -147,16 +147,16 @@ export class BoardRenderer {
       p.cards.some(c => c._animating)
     );
 
-    // Update offscreen background if state changed
-    if (this._bgDirty && !hasDrag && !hasAnim) {
+    // Update offscreen background if state changed (skip during drag — needs drag exclusion)
+    if (this._bgDirty && !hasDrag) {
       this._renderBackground(game);
     }
 
     const ctx = this.ctx;
     const dpr = this.dpr || Math.min(window.devicePixelRatio || 1, 1.5);
 
-    if (hasDrag || hasAnim) {
-      // During drag/animation: full redraw (need drag/anim exclusion)
+    if (hasDrag) {
+      // During drag: full redraw (need drag card exclusion)
       const displayW = this.canvas.width / dpr;
       const displayH = this.canvas.height / dpr;
 
@@ -176,18 +176,17 @@ export class BoardRenderer {
       }
 
       // Draw dragged cards on top
-      if (hasDrag) {
-        for (let i = 0; i < dragState.cards.length; i++) {
-          const card = dragState.cards[i];
-          const x = dragState.currentX - dragState.offsetX;
-          const y = dragState.currentY - dragState.offsetY + i * this.overlapFaceUp;
-          this.cardRenderer.drawCard(ctx, card, x, y);
-        }
+      for (let i = 0; i < dragState.cards.length; i++) {
+        const card = dragState.cards[i];
+        const x = dragState.currentX - dragState.offsetX;
+        const y = dragState.currentY - dragState.offsetY + i * this.overlapFaceUp;
+        this.cardRenderer.drawCard(ctx, card, x, y);
       }
 
       ctx.restore();
     } else {
-      // Static: just blit the cached background
+      // Static or animation: blit cached background
+      // (_renderBackground already skips _animating cards)
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.drawImage(this._bgCanvas, 0, 0);
