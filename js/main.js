@@ -6,7 +6,7 @@ import { HUD } from './ui/HUD.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v27';
+const APP_VERSION = 'v28';
 
 class GameController {
   constructor() {
@@ -180,7 +180,7 @@ class GameController {
     this.requestRender();
   }
 
-  async _onResize() {
+  async _onResize(recheckCount = 0) {
     const dpr = this.dpr;
     const wrap = document.getElementById('canvas-wrap');
     const displayW = wrap ? wrap.clientWidth : this.canvas.parentElement.clientWidth;
@@ -200,13 +200,14 @@ class GameController {
       this.renderer.render(this.game, this.input ? this.input.getDragState() : null);
     }
 
-    // Re-check after next frame in case layout wasn't ready yet.
-    // Await the re-check so no concurrent render can race with setSize().
-    await new Promise(r => requestAnimationFrame(r));
-    const newW = wrap ? wrap.clientWidth : this.canvas.parentElement.clientWidth;
-    const newH = wrap ? wrap.clientHeight : this.canvas.parentElement.clientHeight;
-    if (newW !== this._lastW || newH !== this._lastH) {
-      await this._onResize();
+    // Re-check after next frame in case layout wasn't ready yet (max 3 times).
+    if (recheckCount < 3) {
+      await new Promise(r => requestAnimationFrame(r));
+      const newW = wrap ? wrap.clientWidth : this.canvas.parentElement.clientWidth;
+      const newH = wrap ? wrap.clientHeight : this.canvas.parentElement.clientHeight;
+      if (newW !== this._lastW || newH !== this._lastH) {
+        await this._onResize(recheckCount + 1);
+      }
     }
   }
 

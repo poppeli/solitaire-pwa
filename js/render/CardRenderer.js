@@ -71,7 +71,7 @@ export class CardRenderer {
   }
 
   _svgToImage(key, svgString, targetCache, attempt = 0) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
         targetCache.set(key, img);
@@ -82,10 +82,11 @@ export class CardRenderer {
           // Retry up to 2 times with small delay
           setTimeout(() => {
             this._svgToImage(key, svgString, targetCache, attempt + 1)
-              .then(resolve, reject);
+              .then(resolve);
           }, 50);
         } else {
-          reject(new Error(`Failed to load card image: ${key}`));
+          // Give up on this image — resolve without caching so app doesn't crash
+          resolve();
         }
       };
       img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
