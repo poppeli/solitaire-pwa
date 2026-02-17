@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pasianssi-v29';
+const CACHE_NAME = 'pasianssi-v30';
 
 const ASSETS = [
   './',
@@ -47,7 +47,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.match(event.request))
       .then((cached) => cached || fetch(event.request))
   );
 });
