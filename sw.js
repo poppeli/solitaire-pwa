@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pasianssi-v34';
+const CACHE_NAME = 'pasianssi-v35';
 
 const ASSETS = [
   './',
@@ -19,6 +19,7 @@ const ASSETS = [
   './js/render/AnimationManager.js',
   './js/input/InputManager.js',
   './js/ui/HUD.js',
+  './js/ui/SoundManager.js',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];

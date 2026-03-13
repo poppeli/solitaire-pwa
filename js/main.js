@@ -3,10 +3,11 @@ import { CardRenderer } from './render/CardRenderer.js';
 import { BoardRenderer } from './render/BoardRenderer.js';
 import { InputManager } from './input/InputManager.js';
 import { HUD } from './ui/HUD.js';
+import { SoundManager } from './ui/SoundManager.js';
 import { createGame, getGameList } from './rules/GameRegistry.js';
 import { AnimationManager } from './render/AnimationManager.js';
 
-const APP_VERSION = 'v34';
+const APP_VERSION = 'v35';
 
 class GameController {
   constructor() {
@@ -22,6 +23,9 @@ class GameController {
     this.renderRequested = false;
     this.rightHanded = localStorage.getItem('pasianssi-hand') !== 'left';
     this.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+
+    this.sound = new SoundManager();
+    this._autoCompleting = false;
 
     this.menuScreen = document.getElementById('menu-screen');
     this.gameScreen = document.getElementById('game-screen');
@@ -245,6 +249,7 @@ class GameController {
   onStockClick() {
     this.game.state.pushUndo();
     this.game.onStockClick();
+    this.sound.playCardFlip();
     this.game.state.moveCount++;
     this.hud.update();
     this.renderer.markDirty();
@@ -266,6 +271,11 @@ class GameController {
     this.game.state.moveCount++;
     this.hud.update();
     this.renderer.markDirty();
+    if (toPile.type === 'foundation') {
+      this.sound.playFoundation();
+    } else {
+      this.sound.playCardMove();
+    }
 
     // Animate if we have positions and not dragging
     const toPos = this._getCardPosition(toPile, toPile.cards.length - moved.length);
@@ -283,7 +293,77 @@ class GameController {
     if (this.game.isWon()) {
       this._onWin();
     } else {
-      this._saveGame();
+      this._checkAutoComplete();
+      if (!this._autoCompleting) this._saveGame();
+    }
+
+    return true;
+  }
+
+  _checkAutoComplete() {
+    if (this._autoCompleting) return;
+    if (this.game.isAutoCompletable?.()) {
+      this._runAutoComplete();
+    }
+  }
+
+  async _runAutoComplete() {
+    this._autoCompleting = true;
+    this.sound.playAutoComplete();
+    // Brief pause so the signal plays before cards start moving
+    await new Promise(r => setTimeout(r, 380));
+
+    while (!this.game.isWon()) {
+      const moved = this._autoMoveOneToFoundation();
+      if (!moved) break;
+      this.game.state.moveCount++;
+      this.hud.update();
+      // Wait for animation (160 ms) + small gap
+      await new Promise(r => setTimeout(r, 190));
+    }
+
+    this._autoCompleting = false;
+    if (this.game.isWon()) {
+      this._onWin();
+    }
+  }
+
+  _autoMoveOneToFoundation() {
+    const piles = this.game.state.getAllPiles().filter(p => p.type !== 'foundation');
+
+    // Pick the lowest-ranked moveable card to avoid deadlocks
+    let bestCard = null, bestPile = null, bestTarget = null, bestRank = 99;
+    for (const pile of piles) {
+      if (pile.isEmpty()) continue;
+      const card = pile.topCard();
+      const target = this.game.findAutoMoveToFoundation(card);
+      if (target && card.rank < bestRank) {
+        bestCard = card;
+        bestPile = pile;
+        bestTarget = target;
+        bestRank = card.rank;
+      }
+    }
+    if (!bestCard) return false;
+
+    const fromPos = this._getCardPosition(bestPile, bestPile.cards.length - 1);
+    const toPos = this.renderer.getPilePosition(bestTarget.id);
+
+    const moved = bestPile.takeFrom(bestPile.cards.length - 1);
+    bestTarget.pushMany(moved);
+    this.game.onMove(moved, bestPile, bestTarget);
+    this.sound.playFoundation();
+    this.renderer.markDirty();
+
+    if (fromPos && toPos) {
+      this.animManager.onComplete = () => {
+        this.renderer.markDirty();
+        this.requestRender();
+      };
+      this.animManager.animate(moved, fromPos.x, fromPos.y, toPos.x, toPos.y, this.renderer.overlapFaceUp, 160);
+      this._animLoop();
+    } else {
+      this.requestRender();
     }
 
     return true;
@@ -413,6 +493,7 @@ class GameController {
     this.game.state.won = true;
     this.hud.stopTimer();
     this._clearSave();
+    this.sound.playWin();
     this._playWinAnimation();
   }
 

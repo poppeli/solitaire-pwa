@@ -105,6 +105,15 @@ export class KlondikeGame extends BaseGame {
       .every(p => p.cards.length === 13);
   }
 
+  // All non-foundation cards are face-up → game can be completed automatically.
+  // Stock cards are face-down so this is only true once stock+waste are empty
+  // and all tableau cards have been revealed.
+  isAutoCompletable() {
+    return this.state.getAllPiles()
+      .filter(p => p.type !== 'foundation')
+      .every(p => p.cards.every(c => c.faceUp));
+  }
+
   getRules() {
     return `<h2>Klondike</h2>
 <h3>Tavoite</h3>
