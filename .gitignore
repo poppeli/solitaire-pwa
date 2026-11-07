@@ -4,3 +4,7 @@ Thumbs.db
 *.log
 PLAN.md
 CLAUDE.md
+
+# Claude Code local permission approvals can contain full command text
+# (including any secrets approved with "don't ask again") — never commit.
+.claude/
